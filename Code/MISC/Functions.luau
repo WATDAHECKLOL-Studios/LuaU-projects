@@ -1,6 +1,12 @@
 --!nonstrict
 --!native
 
+-- @Author: @WATDAHECKLOL32.
+-- @Date:  3/24/25
+
+-- Some common exploit functions you see made in luau, getsenv and getrawmetable and cheap getnilinstances and cheap newcclosure, and some made up ones like hookscriptfunction and getfunction.
+-- Made for fun.
+
 local xpcall: <E, A..., R1..., R2...>((A...) -> (R1...), (E) -> (R2...), A...) -> (boolean, R1...) = xpcall;
 local info: ((number, string) -> (...any)) & ((thread, number, string) -> (...any)) & (<A..., R1...>((A...) -> (R1...), string) -> (...any)) = debug.info;
 
