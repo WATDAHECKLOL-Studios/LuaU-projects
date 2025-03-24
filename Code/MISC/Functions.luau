@@ -1,12 +1,6 @@
 --!nonstrict
 --!native
 
--- @Author: @WATDAHECKLOL32.
--- @Date:  3/24/25
-
--- Some common exploit functions you see made in luau, getsenv and getrawmetable and cheap getnilinstances, and some made up ones like hookscriptfunction and getfunction.
--- Made for fun.
-
 local xpcall: <E, A..., R1..., R2...>((A...) -> (R1...), (E) -> (R2...), A...) -> (boolean, R1...) = xpcall;
 local info: ((number, string) -> (...any)) & ((thread, number, string) -> (...any)) & (<A..., R1...>((A...) -> (R1...), string) -> (...any)) = debug.info;
 
@@ -112,6 +106,16 @@ end;
 
 local getnilinstances = function() : {Instance?}
 	return cheap;
+end;
+
+local newcclosure = function(Function: any) : ()
+	-- stolen below from some devfourm :3
+	
+	return coroutine.wrap(function(...)
+		while true do
+			coroutine.yield(Function(...));
+		end;
+	end);
 end;
 
 local getrawmetatable = function(Object: Object?): any
@@ -240,6 +244,6 @@ local oldFunction = getfunction(workspace.Script, "troll");
 local hook;
 
 print("Old function before we do sus things to it", oldFunction);
-hook = hookscriptfunction(workspace.Script, "troll", function(Message: string)
+hook = hookscriptfunction(workspace.Script, "troll", newcclosure(function(Message: string)
 	return hook("enjoy.");
-end);
+end));
