@@ -2,7 +2,7 @@
 --!native
 
 -- @Author: @WATDAHECKLOL32.
--- @Date:  3/14/25
+-- @Date:  3/24/25
 
 -- Some common exploit functions you see made in luau, getsenv and getrawmetable and cheap getnilinstances, and some made up ones like hookscriptfunction and getfunction.
 -- Made for fun.
