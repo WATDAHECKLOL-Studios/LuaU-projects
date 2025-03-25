@@ -1,255 +1,150 @@
---!nonstrict
---!native
+local HttpService = game:GetService("HttpService");
+local RunService = game:GetService("RunService");
 
--- @Author: @WATDAHECKLOL32.
--- @Date:  3/24/25
+local renv = {
+	print = print;
+	warn = warn;
+	
+	error = error;
+	game = game;
+	
+	Game = Game;
+	getmetatable = getmetatable;
 
--- Some common exploit functions you see made in luau, getsenv and getrawmetable and cheap getnilinstances and cheap newcclosure, and some made up ones like hookscriptfunction and getfunction.
--- Made for fun.
+	getfenv = getfenv;
+	rawset = rawset;
+	
+	rawget = rawget;
+	rawlen = rawlen;
+	
+	rawequal = rawequal;
+	require = require;
+	
+	setfenv = setfenv;
+	_G = _G;
+	
+	shared = shared;
+	spawn = spawn;
+	
+	settings = settings;
+	UserSettings = UserSettings;
+	
+	gcinfo = gcinfo;
+	ypcall = ypcall;
+	
+	xpcall = xpcall;
+	pcall = pcall;
+	
+	wait = wait;
+	delay = delay;
+	
+	Spawn = Spawn;
+	string = string;
+	
+	tostring = tostring;
+	tonumber = tonumber;
+	
+	Delay = Delay;
+	Wait = Wait;
+	
+	wrap = coroutine.wrap; yield = coroutine.yield;
+	
+	Vector3 = {
+		Vector3 = Vector3, new = Vector3.new, max = Vector3.max, min = Vector3.min, one = Vector3.one, zero = Vector3.zero
+	};
+	
+	new = Instance.new;
+	fromExisting = Instance.fromExisting;
+	
+	JSONEncode = HttpService.JSONEncode;
+	JSONDecode = HttpService.JSONDecode;
 
-local xpcall: <E, A..., R1..., R2...>((A...) -> (R1...), (E) -> (R2...), A...) -> (boolean, R1...) = xpcall;
-local info: ((number, string) -> (...any)) & ((thread, number, string) -> (...any)) & (<A..., R1...>((A...) -> (R1...), string) -> (...any)) = debug.info;
+	GenerateGUID = HttpService.GenerateGUID;
+	GetSecret = HttpService.GetSecret;
 
-local getfenv: (any) -> { [string]: any } = getfenv;
-local rawset: <K, V>({ [K]: V }, K, V) -> { [K]: V } = rawset;
+	UrlEncode = HttpService.UrlEncode;
+	GetAsync = HttpService.GetAsync;
 
-local cheap: {Instance?} = {};
-local game: DataModel = game;
+	PostAsync = HttpService.PostAsync;
+	RequestAsync = HttpService.RequestAsync;
+	
+	RunService = {
+		IsServer = RunService.IsServer;
+		IsClient = RunService.IsClient;
+		
+		BindToRenderStep = RunService.BindToRenderStep;
+		IsEdit = RunService.IsEdit;
+		
+		IsRunMode = RunService.IsRunMode;
+		IsRunning = RunService.IsRunning;
+		
+		Pause = RunService.Pause;
+		Run = RunService.Run;
+		
+		Stop = RunService.Stop;
+		UnbindFromRenderStep = RunService.UnbindFromRenderStep;
+		
+		PreRender = RunService.PreRender;
+		RenderStepped = RunService.RenderStepped;
+		
+		Stepped = RunService.Stepped;
+		PreSimulation = RunService.PreSimulation;
+	};
+	
+	task = {
+		wait = task.wait;
+		cancel = task.cancel;
+		
+		spawn = task.spawn;
+		delay = task.delay;
+		
+		defer = task.defer;
+		desynchronize = task.desynchronize;
+		
+		synchronize = task.synchronize
+	}
+};
 
-local insert: (<V>({V}, V) -> ()) & (<V>({V}, number, V) -> ()) = table.insert;
-local delay: <A..., R...>(number?, ((A...) -> (R...)) | thread, A...) -> thread = task.delay;
+table.freeze(renv);
 
-local assert: <T>(T, string?) -> T = assert;
-local getmetatable = getmetatable;
-
-local getsenv = function(TargetScript: LuaSourceContainer?) : {}
-	assert(TargetScript);
-	-- local env = get(info(2, "s"));
-	return getfenv(info(2, "f"));
+local getrenv = function()
+	return renv;	
 end;
 
-local getfunction = function(Script: LuaSourceContainer, targetFunction: string) : RBXScriptSignal?
-	local targetEnv = getfenv(2, script);
-	local global = targetEnv._G;
-
-	local shared = targetEnv.shared;
-
-	local actualFunction;
-	for Index, Value in targetEnv do
-		if Index == targetFunction then
-			actualFunction = Value;
-			break;	
-		end;
-	end;
-
-	for Index, Value in global do
-		if Index == targetFunction then
-			actualFunction = Value;
-			break;	
-		end;
-	end;
-
-	for Index, Value in shared do
-		if Index == targetFunction then
-			actualFunction = Value;
-			break;	
-		end;
-	end;
-
-
-	if not actualFunction then
-		error("i didnt get find dat.", 2);
-		return nil;
+local hookfunction = function(OldFunction, NewFunction)	
+	for Index, Function in renv do
+		if Function == OldFunction then
+			print("found in RENV")
+			getfenv()[Index] = NewFunction;
+			break;
+		end; 
 	end;
 	
-	return actualFunction;
+	
+	for Index,Function in  getfenv(2, debug.info(2, 'f')) do
+		if Function == OldFunction then
+			getfenv(2, debug.info(2, 'f'))[Index] = NewFunction;
+			break;
+		end;
+	end;
+
+	
+	return OldFunction;
 end;
 
-local hookscriptfunction = function(script: LuaSourceContainer, targetFunction: string, newFunction: any) : RBXScriptConnection?
-	assert(script);
-	assert(targetFunction);
-	
-	local targetEnv = getfenv(2, script);
-	local global = targetEnv._G;
-	
-	local shared = targetEnv.shared;
-	
-	warn("TargetENV", targetEnv, "Gloals", global, "shared", shared);
-	local omg;
-	
-	for Index, Value in targetEnv do
-		if Index == targetFunction then
-			omg = Value;
-			rawset(targetEnv, Index, newFunction);
-			break;	
-		end;
+
+
+
+local hook;
+hook = hookfunction(getrenv().spawn, function(thread)
+	return coroutine.yield(coroutine.running())
+end)
+
+
+spawn(function()
+	while task.wait() do
+		print("spawn is broken :(");
 	end;
-	
-	for Index, Value in global do
-		if Index == targetFunction then
-			omg = Value;
-			rawset(global, Index, newFunction);
-			break;	
-		end;
-	end;
-	
-	for Index, Value in shared do
-		if Index == targetFunction then
-			omg = Value;
-			rawset(shared, Index, newFunction);
-			break;	
-		end;
-	end;
-	
-	
-	if not omg then
-		error("i didnt get find.", 2);
-		return nil;
-	end;
-	
-	return omg;
-end;
-
-local getnilinstances = function() : {Instance?}
-	return cheap;
-end;
-
-local newcclosure = function(Function: any) : ()
-	-- stolen below from some devfourm :3
-	
-	return coroutine.wrap(function(...)
-		while true do
-			coroutine.yield(Function(...));
-		end;
-	end);
-end;
-
-local getrawmetatable = function(Object: Object?): any
-	assert(Object, "lol");
-
-	if type(getmetatable(Object)) == 'string' then
-		local realMethods: {(string) -> RBXScriptSignal?} = {};
-
-		realMethods.__tostring = function()
-			return tostring(Object);
-		end;
-
-		realMethods.__tonumber = function()
-			return tonumber(Object);
-		end;
-
-		xpcall(function()
-			return Object == #game;
-		end, function()
-			realMethods.__eq = info(2, "f");
-		end);
-
-		xpcall(function()
-			return #Object;	
-		end, function()
-			realMethods.__len = info(2, "f");
-		end);
-
-		xpcall(function()
-			return Object + "no";	
-		end, function()
-			realMethods.__add = info(2, "f");
-		end);
-
-		xpcall(function()
-			return Object - "no2";
-		end, function()
-			realMethods.__sub = info(2, "f");
-		end);
-
-
-		xpcall(function()
-			for ____ in Object do
-
-			end;
-		end, function()
-			realMethods.__iter = info(2, "f")
-		end);
-
-		xpcall(function()
-			Object.Name = newproxy();
-		end, function()
-			realMethods.__newindex = info(2, "f");
-		end);
-
-		xpcall(function()
-			return Object.idonotexist;
-		end, function()
-			realMethods.__index = info(2, "f");
-		end);
-
-		xpcall(function()
-			return Object:bfekjvferkljfrlkerf();
-		end, function()
-			realMethods.__namecall = info(2, "f");
-		end);
-
-		xpcall(function()
-			Object();
-		end, function()
-			realMethods.__call = info(2, "f");
-		end);
-
-		xpcall(function()
-			return Object * "h";
-		end, function()
-			realMethods.__mul = info(2, "f");
-		end);
-
-		xpcall(function()
-			return Object / "dklowqjkdwqkdwq";	
-		end, function()
-			realMethods.__div = info(2, "f");
-		end);
-
-		xpcall(function()
-			return Object .. 5;
-		end, function()
-			realMethods.__concat = info(2, "f");
-		end);
-
-		xpcall(function()
-			return Object < game;	
-		end,function()
-			realMethods.__lt = info(2, "f")
-		end);
-
-		xpcall(function()
-			return Object <= game;
-		end, function()
-			realMethods.__le = info(2, "f");
-		end);
-
-		--realMethods.__metatable = getmetatable(Object);
-
-		local proxy = newproxy(true);
-		for Index, Value in realMethods do
-			rawset(getmetatable(proxy), Index, Value);
-		end;
-
-		return getmetatable(proxy);
-	else
-		return getmetatable(Object);
-	end;
-end;
-
-game.DescendantRemoving:Connect(function(Instance: Instance) -- LAG MAKER 99999.
-	delay(8, function()
-		insert(cheap, Instance);
-	end);
 end);
 
-wait(2);
-
-local oldFunction = getfunction(workspace.Script, "troll");
-local hook;
-
-print("Old function before we do sus things to it", oldFunction);
-hook = hookscriptfunction(workspace.Script, "troll", newcclosure(function(Message: string)
-	return hook("enjoy.");
-end));
+print('oh no')
