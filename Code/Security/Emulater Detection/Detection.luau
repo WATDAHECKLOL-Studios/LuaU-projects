@@ -1,3 +1,6 @@
+--!nocheck
+--!nolint DeprecatedApi
+
 ---@Author:  @WATDAHECKLOL32
 -- @Date:    3/25/25
 -- @Name:    Detection.luau
@@ -11,7 +14,7 @@ do
 
 	bindable:Destroy();
 
-	local wrap: <A..., R...>((A...) -> (R...)) -> (A...) -> (R...)= coroutine.wrap;
+	local wrap: <A..., R...>((A...) -> (R...)) -> (A...) -> (R...) = coroutine.wrap;
 	local task = task;
 
 	local Actual_GameInstance: DataModel = nil; -- This will be the non spoofed game instance.
@@ -59,8 +62,8 @@ do
 
 	local RunService: RunService = game.FindService(game, "RunService");
 	local GroupService: GroupService = game:GetService("GroupService");
-	
-	
+
+
 	local ishooked; ishooked = @checked function(isHooked) : boolean
 		local sucess, err = pcall(@checked function()
 			return debug.info(isHooked, "l") ~= -1
@@ -168,8 +171,8 @@ do
 
 	print("Fake creator id", game.CreatorId);
 	print("Fake creator type", game.CreatorType);
-	
-	
+
+
 	xpcall(function()
 		return Actual_GameInstance.yeah;
 	end, function()
@@ -178,7 +181,7 @@ do
 			return Detected(8);
 		end;
 	end);
-	
+
 	xpcall(function()
 		Actual_GameInstance.Name = newproxy();
 	end, function()
@@ -457,42 +460,42 @@ do
 					Detected(1);
 				end;
 			end)();
-			
+
 			wrap(function() -- See if functions are hooked.
 				if ishooked(GroupService.GetGroupsAsync) or ishooked(xpcall) or ishooked(wrap) or ishooked(coroutine) or ishooked(coroutine.wrap) or ishooked(wait) or ishooked(task) or ishooked(task.wait) or ishooked(getfenv) or ishooked(setfenv) or ishooked(spawn) or ishooked(task.spawn) or ishooked(pcall) then
 					return Detected(11)	
 				end;	
 			end)();
-			
+
 			wrap(function() -- Check if the game's metamethods match
 				local F_index, F_NewIndex;
 				local R_Index, R_newIndex;
-				
+
 				if Actual_GameInstance then
 					xpcall(function()
 						return game.Okay;
 					end, function()
 						F_index = debug.info(2, "f");
 					end);
-					
+
 					xpcall(function()
 						game.Name = newproxy();
 					end, function()
 						F_NewIndex = debug.info(2, "f");
 					end);
-					
+
 					xpcall(function()
 						Actual_GameInstance.Name = newproxy();
 					end, function()
 						R_newIndex = debug.info(2, "f");
 					end);
-					
+
 					xpcall(function()
 						return Actual_GameInstance.okay;
 					end, function()
 						R_Index = debug.info(2, "f");
 					end);
-					
+
 					if F_index ~= R_Index or F_NewIndex ~= R_newIndex then
 						return Detected(2);
 					end;
