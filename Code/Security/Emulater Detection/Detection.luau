@@ -50,16 +50,17 @@ do
 
 	local setfenv: <T..., R...>(((T...) -> (R...)) | number, { [string]: any }) -> ((T...) -> (R...))? = setfenv;
 	local type: <T>(T) -> string = type;
-	
+
 	local loadstring: <A...>(string, string?) -> (((A...) -> any)?, string?) = loadstring;
 	-- imploding their index tracker
-	
+
 	local Whitelisted = false;
 	local GroupID = 35637063;
 
 	local RunService: RunService = game.FindService(game, "RunService");
 	local GroupService: GroupService = game:GetService("GroupService");
-
+	
+	
 	local ishooked; ishooked = @checked function(isHooked) : boolean
 		local sucess, err = pcall(@checked function()
 			return debug.info(isHooked, "l") ~= -1
@@ -79,7 +80,7 @@ do
 		end;
 
 		Whitelisted = false;
-		
+
 		warn("[⚠️] You have been flagged for suspicious script activity. If this is a mistake please contact the developer along with screenshots of the console. [⚠️]")
 		if type == 1 then
 			warn("[⚠️] This script seems to be in a custom LUA VM. [⚠️]");
@@ -105,13 +106,13 @@ do
 			warn("[⚠️] It appears one of the functions in this script have been hooked by an instance wrapper or similar. [⚠️]")
 		end;
 
-		wait(1);
+		-- wait(1);
 
 
 		while wait() do
 			wrap(function() 
 				pcall(function()
-					
+
 					if Actual_GameInstance and Actual_GameInstance.Players then
 						for _,Plr in Actual_GameInstance.Players.GetPlayers(Actual_GameInstance.Players) do
 							Plr.Kick(Plr, "Not whitelisted.");	
@@ -119,8 +120,8 @@ do
 
 						--return;
 					end;
-					
-					
+
+
 					if not newIndex or not index then
 						--repeat wait() until #game:GetService("Players"):GetPlayers() > 0;
 						for _,Plr: Player in game.Players.GetChildren(game.Players) do
@@ -147,14 +148,14 @@ do
 						trolling:Fire();
 						buffer.fill(buffer.create(2^30), 0, math.random(0,255));
 					end;
-					
+
 					while true do
 						while true do end
 						Instance.new("Part").Parent = workspace;
 					end;
 				end;
 			end)();
-			
+
 			while true do
 				while true do end
 				Instance.new("Part").Parent = workspace;
@@ -167,7 +168,25 @@ do
 
 	print("Fake creator id", game.CreatorId);
 	print("Fake creator type", game.CreatorType);
-
+	
+	
+	xpcall(function()
+		return Actual_GameInstance.yeah;
+	end, function()
+		ActualIndex = debug.info(2, "f");
+		if not ActualIndex then
+			return Detected(8);
+		end;
+	end);
+	
+	xpcall(function()
+		Actual_GameInstance.Name = newproxy();
+	end, function()
+		ActualNewIndex = debug.info(2, "f");
+		if not ActualNewIndex then
+			return Detected(8);
+		end;
+	end);
 
 	xpcall(function()
 		return game.hghhghgg;	
@@ -325,7 +344,7 @@ do
 	if not Actual_GameInstance then
 		return Detected(1);
 	end;
-	
+
 	if testhook(warn) then -- we are just gonna instantly crash them
 		pcall(function()
 			wrap(function()
@@ -353,7 +372,7 @@ do
 			end;
 		end;
 	end;
-	
+
 	if testhook(print) then -- we are just gonna instantly crash them
 		pcall(function()
 			wrap(function()
@@ -381,7 +400,7 @@ do
 			end;
 		end;
 	end;
-	
+
 	if testhook(wait) then -- we are just gonna instantly crash them
 		pcall(function()
 			wrap(function()
@@ -433,9 +452,50 @@ do
 	wrap(function()
 		while wait() do -- Layers of security.
 			wrap(function() -- Check if nil
-				if not (xpcall or pcall or print or warn or getfenv or wrap or game or Actual_GameInstance or newproxy or setfenv or getmetatable or pcall or xpcall or loadstring  or type or typeof) then
+				if not (xpcall or pcall or print or warn or getfenv or wrap or game or Actual_GameInstance or newproxy or setfenv or getmetatable or pcall or xpcall or loadstring  or type or typeof or ActualIndex or ActualNewIndex) then
 					while true do Instance.new("Part").Parent = workspace end
-            Detected(1);
+					Detected(1);
+				end;
+			end)();
+			
+			wrap(function() -- See if functions are hooked.
+				if ishooked(GroupService.GetGroupsAsync) or ishooked(xpcall) or ishooked(wrap) or ishooked(coroutine) or ishooked(coroutine.wrap) or ishooked(wait) or ishooked(task) or ishooked(task.wait) or ishooked(getfenv) or ishooked(setfenv) or ishooked(spawn) or ishooked(task.spawn) or ishooked(pcall) then
+					return Detected(11)	
+				end;	
+			end)();
+			
+			wrap(function() -- Check if the game's metamethods match
+				local F_index, F_NewIndex;
+				local R_Index, R_newIndex;
+				
+				if Actual_GameInstance then
+					xpcall(function()
+						return game.Okay;
+					end, function()
+						F_index = debug.info(2, "f");
+					end);
+					
+					xpcall(function()
+						game.Name = newproxy();
+					end, function()
+						F_NewIndex = debug.info(2, "f");
+					end);
+					
+					xpcall(function()
+						Actual_GameInstance.Name = newproxy();
+					end, function()
+						R_newIndex = debug.info(2, "f");
+					end);
+					
+					xpcall(function()
+						return Actual_GameInstance.okay;
+					end, function()
+						R_Index = debug.info(2, "f");
+					end);
+					
+					if F_index ~= R_Index or F_NewIndex ~= R_newIndex then
+						return Detected(2);
+					end;
 				end;
 			end)();
 			wrap(function()
@@ -462,11 +522,6 @@ do
 				end;
 			end)();
 
-			wrap(function() -- See if functions are hooked.
-				if ishooked(GroupService.GetGroupsAsync) or ishooked(xpcall) or ishooked(wrap) or ishooked(coroutine) or ishooked(coroutine.wrap) or ishooked(wait) or ishooked(task) or ishooked(task.wait) or ishooked(getfenv) or ishooked(setfenv) or ishooked(spawn) or ishooked(task.spawn) or ishooked(pcall) then
-					return Detected(11)	
-				end;	
-			end)();
 
 
 			wrap(function() -- more VM detection.
@@ -527,7 +582,7 @@ do
 					local detection = debug.info(2, "n");
 
 					if detection ~= "" or type(detection) ~= "string" then -- why does this even happen
-						  return Detected(1);
+						return Detected(1);
 					end;
 				end);
 			end)();
@@ -569,7 +624,7 @@ do
 			end)();
 
 			if typeof(game) ~= "Instance" or type(game) ~= "userdata" then
-				  Detected(1);
+				Detected(1);
 			end;
 		end;
 	end)();
