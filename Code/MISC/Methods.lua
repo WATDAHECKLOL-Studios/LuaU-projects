@@ -1,4 +1,4 @@
--- this is glua btw
+-- this is glua not luau btw
 
 local getrawmetatable = debug.getmetatable;
 local newcclosure = function(func)
@@ -68,3 +68,60 @@ local mine = setmetatable({}, {
 });
 
 print(mine:hi("b"))
+
+
+local old = debug;
+
+
+local function info(FuncOrLevel, Params)
+    local Result = debug.getinfo(FuncOrLevel, "Slnf");
+    local New = {};
+
+    if Params:find("s") then
+        if Result.what == "C" then
+            New[1] = "[C]";
+        else
+            New[1] = Result.what;
+        end;
+    end;
+
+    if Params:find("l") then
+         New[2] = Result.linedefined;
+    end;
+
+    if Params:find("n") then
+        if Result.name == nil then
+            New[3] = "";
+        else
+            New[3] = Result.name;
+        end;
+    end;
+
+    if Params:find("a") then -- return true for C functions, return false for lua functions
+        if Result.what == "C" then
+            New[4] = "0 true";
+        else
+            New[4] = "0 false";
+        end;
+    end;
+
+    if Params:find("f") then
+        New[5] = Result.func;
+    end;
+
+
+    return unpack(New);
+end;
+
+local debug = {
+    ["info"] = info;
+};
+
+for Index, Value in next, debug do
+    debug[Index] = Value
+end;
+
+local test = function()
+end;
+
+print(debug.info(test, "slnaf"));
