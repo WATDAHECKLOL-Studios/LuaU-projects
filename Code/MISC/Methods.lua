@@ -37,11 +37,10 @@ local namecallatom = newcclosure(function(self, index, ...)
 		getrawmetatable(self).__namecall(self, ...);
 	end;
 
-	getnamecallmethod = function() 
+	getnamecallmethod = newcclosure(function() 
 		return nil;
-	end;
+	end);
 
-	namecallmethods = {};
 end);
 
 local typeof = newcclosure(function(Object)
@@ -55,20 +54,17 @@ end);
 local mine = setmetatable({}, {
 	__index = function(Self, Index, ...)
 		return rawget(Self, Index) or function(...)
-            namecallatom(Self, Index, ...);
+			namecallatom(Self, Index, ...);
 		end;
-
-
-
 	end;
 
 	__namecall = function(Self, ...)
 		print("namecall metamethod invoked with", getnamecallmethod(), "with arugments of", ...);
 	end;
 
-    
+
 	__metatable = "The metatable is locked";
 	__type = "Instance";
 });
 
-table.foreach(getrawmetatable(mine), print);
+print(mine:hi("b"))
