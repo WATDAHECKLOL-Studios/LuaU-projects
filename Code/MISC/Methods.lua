@@ -1,3 +1,5 @@
+-- this is glua btw
+
 local getrawmetatable = debug.getmetatable;
 local newcclosure = function(func)
 	return coroutine.wrap(function(...)
